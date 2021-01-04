@@ -109,9 +109,9 @@ add_custom_target( ConfParser echo "Creating Conf Parser" )
 # Custom command for flex
 
 add_custom_command(
-	SOURCE conf.token.ll
+    SOURCE conf.token.ll
 	COMMAND ${PATH_BIN_FLEX}
-	ARGS -d -oconf.token.cpp conf.token.ll
+    ARGS -d -oconf.token.cpp ${IKE_SOURCE_DIR}/source/iked/conf.token.ll
 	TARGET ConfParser
 	OUTPUTS conf.token.cpp )
 
@@ -120,7 +120,7 @@ add_custom_command(
 add_custom_command(
 	SOURCE conf.parse.yy
 	COMMAND ${PATH_BIN_BISON}
-	ARGS -oconf.parse.cpp conf.parse.yy
+	ARGS -oconf.parse.cpp ${IKE_SOURCE_DIR}/source/iked/conf.parse.yy
 	TARGET ConfParser
 	OUTPUTS conf.parse.cpp conf.parse.hpp location.hh position.hh stack.hh )
 

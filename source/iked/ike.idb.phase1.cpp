@@ -294,13 +294,13 @@ _IDB_PH1::_IDB_PH1( IDB_TUNNEL * set_tunnel, bool set_initiator, IKE_COOKIES * s
 	//
 	// initialize initiator value
 	//
-	
+
 	initiator = set_initiator;
 
 	//
 	// initialize exchange type
 	//
-	
+
 	exchange = tunnel->peer->exchange;
 
 	//
@@ -554,7 +554,7 @@ void _IDB_PH1::end()
 			//
 			// get the next config in our list
 			// and attempt to match by pointer
-			// 
+			//
 
 			IDB_CFG * cfg = iked.idb_list_cfg.get( cfg_index );
 			if( cfg->ph1ref == this )
@@ -594,7 +594,7 @@ void _IDB_PH1::end()
 			//
 			// get the next phase2 in our list
 			// and attempt to match tunnel ids
-			// 
+			//
 
 			IDB_PH2 * ph2 = iked.idb_list_ph2.get( ph2_index );
 			if( ( ph2->tunnel == tunnel ) && ( ph2->status() == XCH_STATUS_PENDING ) )
@@ -676,7 +676,9 @@ bool _IDB_PH1::setup_dhgrp( IKE_PROPOSAL * proposal )
 	}
 
 	xl.size( dh_size );
-	long result = BN_bn2bin( dh->pub_key, xl.buff() );
+    const BIGNUM* pub_key = NULL;
+    DH_get0_key(dh, &pub_key, NULL);
+	long result = BN_bn2bin( pub_key, xl.buff() );
 
 	//
 	// fixup public buffer alignment

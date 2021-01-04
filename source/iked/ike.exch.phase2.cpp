@@ -61,7 +61,7 @@ long _IKED::process_phase2_recv( IDB_PH1 * ph1, PACKET_IKE & packet, unsigned ch
 	uint32_t msgid = packet.get_msgid();
 
 	IDB_PH2 * ph2 = NULL;
-	
+
 	if( !idb_list_ph2.find(
 			true,
 			&ph2,
@@ -155,7 +155,7 @@ long _IKED::process_phase2_recv( IDB_PH1 * ph1, PACKET_IKE & packet, unsigned ch
 	//
 	// if we are dumping decrypted packets,
 	// we need to rebuild a full packet to
-	// dump to pcap format 
+	// dump to pcap format
 	//
 
 	if( dump_decrypt )
@@ -801,7 +801,7 @@ long _IKED::process_phase2_send( IDB_PH1 * ph1, IDB_PH2 * ph2 )
 
 		if(  ( ph2->xstate & XSTATE_RECV_HA ) &&
 			 ( ph2->xstate & XSTATE_RECV_SA ) &&
-			 ( ph2->xstate & XSTATE_RECV_NO ) && 
+			 ( ph2->xstate & XSTATE_RECV_NO ) &&
 			!( ph2->xstate & XSTATE_SENT_LP ) )
 		{
 			//
@@ -857,7 +857,7 @@ long _IKED::process_phase2_send( IDB_PH1 * ph1, IDB_PH2 * ph2 )
 
 		if(  ( ph2->xstate & XSTATE_RECV_HA ) &&
 			 ( ph2->xstate & XSTATE_RECV_SA ) &&
-			 ( ph2->xstate & XSTATE_RECV_NO ) && 
+			 ( ph2->xstate & XSTATE_RECV_NO ) &&
 			!( ph2->xstate & XSTATE_SENT_HA ) )
 		{
 			//
@@ -1008,14 +1008,13 @@ long _IKED::phase2_gen_hash_i( IDB_PH1 * ph1, IDB_PH2 * ph2, BDATA & hash )
 
 	hash.size( ph1->hash_size );
 
-	HMAC_CTX ctx_prf;
-	HMAC_CTX_init( &ctx_prf );
+	HMAC_CTX* ctx_prf = HMAC_CTX_new();
 
-	HMAC_Init_ex( &ctx_prf, ph1->skeyid_a.buff(), ( int ) ph1->skeyid_a.size(), ph1->evp_hash, NULL );
-	HMAC_Update( &ctx_prf, input.buff(), input.size() );
-	HMAC_Final( &ctx_prf, hash.buff(), NULL );
+	HMAC_Init_ex( ctx_prf, ph1->skeyid_a.buff(), ( int ) ph1->skeyid_a.size(), ph1->evp_hash, NULL );
+	HMAC_Update( ctx_prf, input.buff(), input.size() );
+	HMAC_Final( ctx_prf, hash.buff(), NULL );
 
-	HMAC_CTX_cleanup( &ctx_prf );
+	HMAC_CTX_free( ctx_prf );
 
 	log.bin(
 		LLOG_DEBUG,
@@ -1048,14 +1047,13 @@ long _IKED::phase2_gen_hash_r( IDB_PH1 * ph1, IDB_PH2 * ph2, BDATA & hash )
 
 	hash.size( ph1->hash_size );
 
-	HMAC_CTX ctx_prf;
-	HMAC_CTX_init( &ctx_prf );
+	HMAC_CTX* ctx_prf = HMAC_CTX_new();
 
-	HMAC_Init_ex( &ctx_prf, ph1->skeyid_a.buff(), ( int ) ph1->skeyid_a.size(), ph1->evp_hash, NULL );
-	HMAC_Update( &ctx_prf, input.buff(), input.size() );
-	HMAC_Final( &ctx_prf, hash.buff(), NULL );
+	HMAC_Init_ex( ctx_prf, ph1->skeyid_a.buff(), ( int ) ph1->skeyid_a.size(), ph1->evp_hash, NULL );
+	HMAC_Update( ctx_prf, input.buff(), input.size() );
+	HMAC_Final( ctx_prf, hash.buff(), NULL );
 
-	HMAC_CTX_cleanup( &ctx_prf );
+	HMAC_CTX_free( ctx_prf );
 
 	log.bin(
 		LLOG_DEBUG,
@@ -1093,14 +1091,13 @@ long _IKED::phase2_gen_hash_p( IDB_PH1 * ph1, IDB_PH2 * ph2, BDATA & hash )
 
 	hash.size( ph1->hash_size );
 
-	HMAC_CTX ctx_prf;
-	HMAC_CTX_init( &ctx_prf );
+	HMAC_CTX* ctx_prf = HMAC_CTX_new();
 
-	HMAC_Init_ex( &ctx_prf, ph1->skeyid_a.buff(), ( int ) ph1->skeyid_a.size(), ph1->evp_hash, NULL );
-	HMAC_Update( &ctx_prf, input.buff(), input.size() );
-	HMAC_Final( &ctx_prf, hash.buff(), 0 );
+	HMAC_Init_ex( ctx_prf, ph1->skeyid_a.buff(), ( int ) ph1->skeyid_a.size(), ph1->evp_hash, NULL );
+	HMAC_Update( ctx_prf, input.buff(), input.size() );
+	HMAC_Final( ctx_prf, hash.buff(), 0 );
 
-	HMAC_CTX_cleanup( &ctx_prf );
+	HMAC_CTX_free( ctx_prf );
 
 	log.bin(
 		LLOG_DEBUG,
@@ -1300,9 +1297,9 @@ long _IKED::phase2_chk_params( IDB_PH1 * ph1, IDB_PH2 * ph2, PACKET_IKE & packet
 		if( !cmp_ph2id( ph2->ph2id_ls, ph2->ph2id_rd, true ) ||
 			!cmp_ph2id( ph2->ph2id_ld, ph2->ph2id_rs, true ) )
 		{
-			log.txt( LLOG_ERROR, 
+			log.txt( LLOG_ERROR,
 				"ii : phase2 rejected, id value mismatch\n"
-				"ii : - loc %s -> %s\n" 
+				"ii : - loc %s -> %s\n"
 				"ii : - rmt %s -> %s\n",
 				txtid_ls,
 				txtid_ld,
@@ -1331,9 +1328,9 @@ long _IKED::phase2_chk_params( IDB_PH1 * ph1, IDB_PH2 * ph2, PACKET_IKE & packet
 				NULL,
 				NULL ) )
 		{
-			log.txt( LLOG_ERROR, 
+			log.txt( LLOG_ERROR,
 				"ii : phase2 rejected, no matching outbound policy found\n"
-				"ii : - loc %s -> %s\n" 
+				"ii : - loc %s -> %s\n"
 				"ii : - rmt %s -> %s\n",
 				txtid_ls,
 				txtid_ld,
@@ -1412,9 +1409,9 @@ long _IKED::phase2_chk_params( IDB_PH1 * ph1, IDB_PH2 * ph2, PACKET_IKE & packet
 				ph2id_rs,
 				ph2id_rd ) )
 		{
-			log.txt( LLOG_ERROR, 
+			log.txt( LLOG_ERROR,
 				"ii : phase2 rejected, no matching inbound policy found\n"
-				"ii : - loc %s -> %s\n" 
+				"ii : - loc %s -> %s\n"
 				"ii : - rmt %s -> %s\n",
 				txtid_ls,
 				txtid_ld,
@@ -1443,9 +1440,9 @@ long _IKED::phase2_chk_params( IDB_PH1 * ph1, IDB_PH2 * ph2, PACKET_IKE & packet
 				ph2id_rd,
 				ph2id_rs ) )
 		{
-			log.txt( LLOG_ERROR, 
+			log.txt( LLOG_ERROR,
 				"ii : phase2 rejected, no matching outbound policy found\n"
-				"ii : - loc %s -> %s\n" 
+				"ii : - loc %s -> %s\n"
 				"ii : - rmt %s -> %s\n",
 				txtid_ls,
 				txtid_ld,
@@ -1466,9 +1463,9 @@ long _IKED::phase2_chk_params( IDB_PH1 * ph1, IDB_PH2 * ph2, PACKET_IKE & packet
 
 		if( !policy_cmp_prots( policy_in, policy_out ) )
 		{
-			log.txt( LLOG_ERROR, 
+			log.txt( LLOG_ERROR,
 				"ii : phase2 rejected, inbound / outbound policy mismatch\n"
-				"ii : - loc %s -> %s\n" 
+				"ii : - loc %s -> %s\n"
 				"ii : - rmt %s -> %s\n",
 				txtid_ls,
 				txtid_ld,
@@ -1530,7 +1527,7 @@ long _IKED::phase2_chk_params( IDB_PH1 * ph1, IDB_PH2 * ph2, PACKET_IKE & packet
 
 	log.txt( LLOG_INFO,
 		"ii : phase2 ids accepted\n"
-		"ii : - loc %s -> %s\n" 
+		"ii : - loc %s -> %s\n"
 		"ii : - rmt %s -> %s\n",
 		txtid_ls,
 		txtid_ld,
@@ -1555,7 +1552,9 @@ long _IKED::phase2_gen_keys( IDB_PH1 * ph1, IDB_PH2 * ph2 )
 		{
 			BDATA prv;
 			prv.size( ph2->dh_size );
-			BN_bn2bin( ph2->dh->priv_key, prv.buff() );
+            const BIGNUM* priv_key = NULL;
+            DH_get0_key(ph2->dh, NULL, &priv_key);
+			BN_bn2bin( priv_key, prv.buff() );
 
 			log.bin(
 				LLOG_DECODE,
@@ -1816,57 +1815,56 @@ long _IKED::phase2_gen_keys( IDB_PH1 * ph1, IDB_PH2 * ph2, long dir, IKE_PROPOSA
 	// K2 = prf( SKEYID_d, K1 | [ g(qm)^xy | ] protocol | SPI | Ni_b | Nr_b )
 	// K3 = prf( SKEYID_d, K2 | [ g(qm)^xy | ] protocol | SPI | Ni_b | Nr_b )
 	//
-	
-	HMAC_CTX ctx_prf;
-	HMAC_CTX_init( &ctx_prf );
 
-	HMAC_Init_ex( &ctx_prf, ph1->skeyid_d.buff(), ( int ) ph1->skeyid_d.size(), ph1->evp_hash, NULL );
+	HMAC_CTX* ctx_prf = HMAC_CTX_new();
+
+	HMAC_Init_ex( ctx_prf, ph1->skeyid_d.buff(), ( int ) ph1->skeyid_d.size(), ph1->evp_hash, NULL );
 
 	if( ph2->dhgr_id )
-		HMAC_Update( &ctx_prf, shared.buff(), shared.size() );
+		HMAC_Update( ctx_prf, shared.buff(), shared.size() );
 
-	HMAC_Update( &ctx_prf, ( unsigned char * ) &proposal->proto, 1 );
-	HMAC_Update( &ctx_prf, ( unsigned char * ) &proposal->spi, 4 );
+	HMAC_Update( ctx_prf, ( unsigned char * ) &proposal->proto, 1 );
+	HMAC_Update( ctx_prf, ( unsigned char * ) &proposal->spi, 4 );
 
 	if( ph2->initiator )
 	{
-		HMAC_Update( &ctx_prf, ph2->nonce_l.buff(), ph2->nonce_l.size() );
-		HMAC_Update( &ctx_prf, ph2->nonce_r.buff(), ph2->nonce_r.size() );
+		HMAC_Update( ctx_prf, ph2->nonce_l.buff(), ph2->nonce_l.size() );
+		HMAC_Update( ctx_prf, ph2->nonce_r.buff(), ph2->nonce_r.size() );
 	}
 	else
 	{
-		HMAC_Update( &ctx_prf, ph2->nonce_r.buff(), ph2->nonce_r.size() );
-		HMAC_Update( &ctx_prf, ph2->nonce_l.buff(), ph2->nonce_l.size() );
+		HMAC_Update( ctx_prf, ph2->nonce_r.buff(), ph2->nonce_r.size() );
+		HMAC_Update( ctx_prf, ph2->nonce_l.buff(), ph2->nonce_l.size() );
 	}
 
-	HMAC_Final( &ctx_prf, key_data, NULL );
+	HMAC_Final( ctx_prf, key_data, NULL );
 
 	for( long size = skeyid_size; size < key_size; size += skeyid_size )
 	{
-		HMAC_Init_ex( &ctx_prf, ph1->skeyid_d.buff(), ( int ) ph1->skeyid_d.size(), ph1->evp_hash, NULL );
-		HMAC_Update( &ctx_prf, key_data + size - skeyid_size, skeyid_size );
+		HMAC_Init_ex( ctx_prf, ph1->skeyid_d.buff(), ( int ) ph1->skeyid_d.size(), ph1->evp_hash, NULL );
+		HMAC_Update( ctx_prf, key_data + size - skeyid_size, skeyid_size );
 
 		if( ph2->dhgr_id )
-			HMAC_Update( &ctx_prf, shared.buff(), shared.size() );
+			HMAC_Update( ctx_prf, shared.buff(), shared.size() );
 
-		HMAC_Update( &ctx_prf, ( unsigned char * ) &proposal->proto, 1 );
-		HMAC_Update( &ctx_prf, ( unsigned char * ) &proposal->spi, 4 );
+		HMAC_Update( ctx_prf, ( unsigned char * ) &proposal->proto, 1 );
+		HMAC_Update( ctx_prf, ( unsigned char * ) &proposal->spi, 4 );
 
 		if( ph2->initiator )
 		{
-			HMAC_Update( &ctx_prf, ph2->nonce_l.buff(), ph2->nonce_l.size() );
-			HMAC_Update( &ctx_prf, ph2->nonce_r.buff(), ph2->nonce_r.size() );
+			HMAC_Update( ctx_prf, ph2->nonce_l.buff(), ph2->nonce_l.size() );
+			HMAC_Update( ctx_prf, ph2->nonce_r.buff(), ph2->nonce_r.size() );
 		}
 		else
 		{
-			HMAC_Update( &ctx_prf, ph2->nonce_r.buff(), ph2->nonce_r.size() );
-			HMAC_Update( &ctx_prf, ph2->nonce_l.buff(), ph2->nonce_l.size() );
+			HMAC_Update( ctx_prf, ph2->nonce_r.buff(), ph2->nonce_r.size() );
+			HMAC_Update( ctx_prf, ph2->nonce_l.buff(), ph2->nonce_l.size() );
 		}
 
-		HMAC_Final( &ctx_prf, key_data + size, 0 );
+		HMAC_Final( ctx_prf, key_data + size, 0 );
 	}
 
-	HMAC_CTX_cleanup( &ctx_prf );
+	HMAC_CTX_free( ctx_prf );
 
 	//
 	// separate encrypt and auth key data

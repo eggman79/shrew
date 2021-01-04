@@ -212,7 +212,7 @@ long _IKED::process_inform_recv( IDB_PH1 * ph1, PACKET_IKE & packet, unsigned ch
 	//
 	// if we are dumping decrypted packets,
 	// we need to rebuild a full packet to
-	// dump to pcap format 
+	// dump to pcap format
 	//
 
 	if( dump_decrypt )
@@ -399,15 +399,14 @@ long _IKED::inform_chk_hash( IDB_PH1 * ph1, IDB_XCH * inform )
 	BDATA hash_c;
 	hash_c.size( ph1->hash_size );
 
-	HMAC_CTX ctx_prf;
-	HMAC_CTX_init( &ctx_prf );
+	HMAC_CTX* ctx_prf = HMAC_CTX_new();
 
-	HMAC_Init_ex( &ctx_prf, ph1->skeyid_a.buff(), ( int ) ph1->skeyid_a.size(), ph1->evp_hash, NULL );
-	HMAC_Update( &ctx_prf, ( unsigned char * ) &inform->msgid, 4 );
-	HMAC_Update( &ctx_prf, inform->hda.buff(), inform->hda.size() );
-	HMAC_Final( &ctx_prf, hash_c.buff(), NULL );
+	HMAC_Init_ex( ctx_prf, ph1->skeyid_a.buff(), ( int ) ph1->skeyid_a.size(), ph1->evp_hash, NULL );
+	HMAC_Update( ctx_prf, ( unsigned char * ) &inform->msgid, 4 );
+	HMAC_Update( ctx_prf, inform->hda.buff(), inform->hda.size() );
+	HMAC_Final( ctx_prf, hash_c.buff(), NULL );
 
-	HMAC_CTX_cleanup( &ctx_prf );
+    HMAC_CTX_free(ctx_prf);
 
 	log.bin(
 		LLOG_DEBUG,
@@ -439,15 +438,14 @@ long _IKED::inform_gen_hash( IDB_PH1 * ph1, IDB_XCH * inform )
 {
 	inform->hash_l.size( ph1->hash_size );
 
-	HMAC_CTX ctx_prf;
-	HMAC_CTX_init( &ctx_prf );
+	HMAC_CTX* ctx_prf = HMAC_CTX_new();
 
-	HMAC_Init_ex( &ctx_prf, ph1->skeyid_a.buff(), ( int ) ph1->skeyid_a.size(), ph1->evp_hash, NULL );
-	HMAC_Update( &ctx_prf, ( unsigned char * ) &inform->msgid, sizeof( inform->msgid ) );
-	HMAC_Update( &ctx_prf, inform->hda.buff(), inform->hda.size() );
-	HMAC_Final( &ctx_prf, inform->hash_l.buff(), 0 );
+	HMAC_Init_ex( ctx_prf, ph1->skeyid_a.buff(), ( int ) ph1->skeyid_a.size(), ph1->evp_hash, NULL );
+	HMAC_Update( ctx_prf, ( unsigned char * ) &inform->msgid, sizeof( inform->msgid ) );
+	HMAC_Update( ctx_prf, inform->hda.buff(), inform->hda.size() );
+	HMAC_Final( ctx_prf, inform->hash_l.buff(), 0 );
 
-	HMAC_CTX_cleanup( &ctx_prf );
+    HMAC_CTX_free(ctx_prf);
 
 	log.bin(
 		LLOG_DEBUG,
@@ -967,7 +965,7 @@ long _IKED::inform_chk_delete( IDB_PH1 * ph1, IKE_NOTIFY * notify, bool secure )
 					XCH_STATUS_MATURE,
 					XCH_STATUS_DEAD,
 					NULL,
-					NULL, 
+					NULL,
 					NULL,
 					&notify->spi ) )
 			{
@@ -1011,7 +1009,7 @@ long _IKED::inform_new_notify( IDB_PH1 * ph1, IDB_PH2 * ph2, unsigned short code
 	// will this be a phase1 or phase2 notification
 	//
 
-	if( ph2 == NULL ) 
+	if( ph2 == NULL )
 	{
 		//
 		// phase1 notification

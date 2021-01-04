@@ -48,13 +48,13 @@
 #if OPENSSL_VERSION_NUMBER >= 0x00908000L
 # define D2I_X509_CONST const
 #else
-# define D2I_X509_CONST 
+# define D2I_X509_CONST
 #endif
 
 #if OPENSSL_VERSION_NUMBER >= 0x00907000L
 # define D2I_RSA_CONST const
 #else
-# define D2I_RSA_CONST 
+# define D2I_RSA_CONST
 #endif
 
 void log_openssl_errors()
@@ -404,7 +404,7 @@ bool _IKED::cert_subj( BDATA & cert, BDATA & subj )
 
 	subj.size( size );
 	unsigned char * temp = subj.buff();
-	
+
 	size = i2d_X509_NAME( x509_name, &temp );
 
 	X509_free( x509 );
@@ -460,7 +460,7 @@ bool _IKED::text_asn1( BDATA & text, BDATA & asn1 )
 	temp.set( text );
 	temp.add( 0, 1 );
 	asn1.del( true );
-        
+
 	X509_NAME * name = X509_NAME_new();
 
 	unsigned char *	fbuff = NULL;
@@ -664,14 +664,14 @@ static int verify_cb( int ok, X509_STORE_CTX * store_ctx )
 		long ll = LLOG_ERROR;
 		char name[ 512 ];
 
-		X509_NAME * x509_name = X509_get_subject_name( store_ctx->current_cert );
+		X509_NAME * x509_name = X509_get_subject_name( X509_STORE_CTX_get_current_cert(store_ctx) );
 
 		X509_NAME_oneline(
 			x509_name,
 			name,
 			512 );
 
-		switch( store_ctx->error )
+		switch( X509_STORE_CTX_get_error(store_ctx) )
 		{
 			case X509_V_ERR_UNABLE_TO_GET_CRL:
 				ok = 1;
@@ -683,9 +683,9 @@ static int verify_cb( int ok, X509_STORE_CTX * store_ctx )
 			ll,
 			"ii : %s(%d) at depth:%d\n"
 			"ii : subject :%s\n",
-			X509_verify_cert_error_string( store_ctx->error ),
-			store_ctx->error,
-			store_ctx->error_depth,
+			X509_verify_cert_error_string( X509_STORE_CTX_get_error(store_ctx) ),
+            X509_STORE_CTX_get_error(store_ctx),
+            X509_STORE_CTX_get_error_depth(store_ctx),
 			name );
 	}
 
@@ -729,7 +729,7 @@ STACK_OF( X509 ) * build_cert_stack( IDB_LIST_CERT & certs, BDATA & leaf )
 		}
 
 		if( index2 < certs.count() )
-			sk_X509_push( chain, x509_cert1 );	
+			sk_X509_push( chain, x509_cert1 );
 		else
 		{
 			leaf = cert1;
@@ -857,7 +857,7 @@ bool prvkey_rsa_load_pem( BDATA & prvkey, FILE * fp, BDATA & pass )
 	if( evp_pkey == NULL )
 		return false;
 
-	bool converted = prvkey_rsa_2_bdata( prvkey, evp_pkey->pkey.rsa );
+	bool converted = prvkey_rsa_2_bdata( prvkey, EVP_PKEY_get0_RSA(evp_pkey) );
 	EVP_PKEY_free( evp_pkey );
 
 	return converted;
@@ -883,7 +883,7 @@ bool prvkey_rsa_load_p12( BDATA & prvkey, FILE * fp, BDATA & pass )
 	if( evp_pkey == NULL )
 		return false;
 
-	bool converted = prvkey_rsa_2_bdata( prvkey, evp_pkey->pkey.rsa );
+	bool converted = prvkey_rsa_2_bdata( prvkey, EVP_PKEY_get0_RSA(evp_pkey) );
 	EVP_PKEY_free( evp_pkey );
 
 	return converted;
@@ -939,7 +939,7 @@ bool prvkey_rsa_load_pem( BDATA & prvkey, BDATA & input, BDATA & pass )
 	if( evp_pkey == NULL )
 		return false;
 
-	bool converted = prvkey_rsa_2_bdata( prvkey, evp_pkey->pkey.rsa );
+	bool converted = prvkey_rsa_2_bdata( prvkey, EVP_PKEY_get0_RSA(evp_pkey) );
 	EVP_PKEY_free( evp_pkey );
 
 	return converted;
@@ -976,7 +976,7 @@ bool prvkey_rsa_load_p12( BDATA & prvkey, BDATA & input, BDATA & pass )
 	if( evp_pkey == NULL )
 		return false;
 
-	bool converted = prvkey_rsa_2_bdata( prvkey, evp_pkey->pkey.rsa );
+	bool converted = prvkey_rsa_2_bdata( prvkey, EVP_PKEY_get0_RSA(evp_pkey) );
 	EVP_PKEY_free( evp_pkey );
 
 	return converted;
@@ -1010,7 +1010,7 @@ bool _IKED::pubkey_rsa_read( BDATA & cert, BDATA & pubkey )
 	if( evp_pkey == NULL )
 		return false;
 
-	bool result = pubkey_rsa_2_bdata( pubkey, evp_pkey->pkey.rsa );
+	bool result = pubkey_rsa_2_bdata( pubkey, EVP_PKEY_get0_RSA(evp_pkey) );
 
 	EVP_PKEY_free( evp_pkey );
 

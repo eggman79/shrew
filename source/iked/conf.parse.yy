@@ -41,7 +41,7 @@
 
 %skeleton "lalr1.cc"
 %defines
-%define "parser_class_name" "conf_parser"
+%define parser_class_name "conf_parser"
 
 %{
 
@@ -271,7 +271,7 @@ daemon_line
 		IKE_SADDR saddr;
 		memset( &saddr, 0, sizeof( saddr ) );
 		saddr.saddr4.sin_family = AF_INET;
-		SET_SALEN( &saddr.saddr4, sizeof( sockaddr_in ) ); 
+		SET_SALEN( &saddr.saddr4, sizeof( sockaddr_in ) );
 		saddr.saddr4.sin_port = htons( $3 );
 
 		if( iked.socket_create( saddr, false ) != LIBIKE_OK )
@@ -1046,7 +1046,7 @@ peer_line
   |	AUTHDATA CERT QUOTED
 	{
 		fpass.del();
-		
+
 		if( iked.cert_load(
 			peer->cert_l,
 			$3->text(),
@@ -1060,7 +1060,7 @@ peer_line
   |	AUTHDATA CERT QUOTED QUOTED
 	{
 		fpass = *$4;
-		
+
 		if( iked.cert_load(
 			peer->cert_l,
 			$3->text(),
@@ -1075,7 +1075,7 @@ peer_line
   |	AUTHDATA PKEY QUOTED
 	{
 		fpass.del();
-		
+
 		if( iked.prvkey_rsa_load(
 			peer->cert_k,
 			$3->text(),
@@ -1088,7 +1088,7 @@ peer_line
   |	AUTHDATA PKEY QUOTED QUOTED
 	{
 		fpass = *$4;
-		
+
 		if( iked.prvkey_rsa_load(
 			peer->cert_k,
 			$3->text(),
@@ -1246,7 +1246,7 @@ plcy_list_line
 				break;
 
 			if( !strcmp( $2->text(), idlist->name.text() ) )
-				break; 
+				break;
 		}
 
 		if( idlist == NULL )
@@ -1267,7 +1267,7 @@ plcy_list_line
 				break;
 
 			if( !strcmp( $2->text(), idlist->name.text() ) )
-				break; 
+				break;
 		}
 
 		if( idlist == NULL )
@@ -1289,7 +1289,7 @@ plcy_list_line
 				break;
 
 			if( !strcmp( $2->text(), idlist->name.text() ) )
-				break; 
+				break;
 		}
 
 		if( idlist == NULL )
@@ -1310,7 +1310,7 @@ plcy_list_line
 				break;
 
 			if( !strcmp( $2->text(), idlist->name.text() ) )
-				break; 
+				break;
 		}
 
 		if( idlist == NULL )

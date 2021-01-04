@@ -55,7 +55,7 @@ bool _CONFIG_MANAGER::file_enumerate( CONFIG & config, int & index )
 
 	WIN32_FIND_DATA ffdata;
 	int found = 0;
-	
+
 	HANDLE hfind = FindFirstFile( sites_user_spec.text(), &ffdata );
 	if( hfind == INVALID_HANDLE_VALUE )
 		return false;
@@ -131,7 +131,7 @@ bool _CONFIG_MANAGER::file_enumerate_public( CONFIG & config, int & index )
 
 	WIN32_FIND_DATA ffdata;
 	int found = 0;
-	
+
 	HANDLE hfind = FindFirstFile( sites_user_spec.text(), &ffdata );
 	if( hfind == INVALID_HANDLE_VALUE )
 		return false;
@@ -650,7 +650,7 @@ bool _CONFIG_MANAGER::file_pcf_load( CONFIG & config, const char * path, bool & 
 			unsigned char key[ 40 ];
 			unsigned char one[ 20 ];
 			unsigned char two[ 20 ];
-			
+
 			data.get( one, 20 );
 			data.get( two, 20 );
 
@@ -679,11 +679,11 @@ bool _CONFIG_MANAGER::file_pcf_load( CONFIG & config, const char * path, bool & 
 			BDATA pwd;
 			data.get( pwd );
 
-			EVP_CIPHER_CTX ctx_cipher;
-			EVP_CIPHER_CTX_init( &ctx_cipher );
+			EVP_CIPHER_CTX* ctx_cipher =  EVP_CIPHER_CTX_new();
+			EVP_CIPHER_CTX_init( ctx_cipher );
 
 			EVP_CipherInit_ex(
-				&ctx_cipher,
+				ctx_cipher,
 				EVP_des_ede3_cbc(),
 				NULL,
 				key,
@@ -691,7 +691,7 @@ bool _CONFIG_MANAGER::file_pcf_load( CONFIG & config, const char * path, bool & 
 				0 );
 
 			EVP_Cipher(
-				&ctx_cipher,
+				ctx_cipher,
 				pwd.buff(),
 				pwd.buff(),
 				( unsigned int ) pwd.size() );
@@ -700,6 +700,7 @@ bool _CONFIG_MANAGER::file_pcf_load( CONFIG & config, const char * path, bool & 
 			pwd.size( pwlen );
 
 			config.set_binary( "auth-mutual-psk", pwd );
+            EVP_CIPHER_CTX_free(ctx_cipher);
 		}
 
 		if( !_stricmp( name.text(), "DHGroup" ) && data.size() )
