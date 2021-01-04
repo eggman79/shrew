@@ -1,1 +1,1 @@
-apt install libedit-dev libssl-dev flex bison -y
+apt install libedit-dev libssl-dev flex bison g++ cmake -y
